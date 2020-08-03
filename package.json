@@ -1,0 +1,26 @@
+{
+  "name": "stocksdapp-contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-contracts": "sol-merger -a _onefile \"./contracts/S.sol\" "
+  },
+  "dependencies": {
+    "@chainlink/contracts": "0.0.7-beta",
+    "@openzeppelin/contracts": "^3.1.0",
+    "@truffle/hdwallet-provider": "^1.0.28",
+    "dotenv": "^8.0.0",
+    "truffle-hdwallet-provider": "^1.0.17",
+    "truffle-plugin-verify": "^0.3.8"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "sol-merger": "^3.1.0"
+  }
+}
