@@ -19,7 +19,7 @@ Current agenda is represented in the form of project cards (https://github.com/s
 - Ropsten Token (linked to Exchange): `0x1E9da3d650AC02D4f65f8ae0D655347Ab9FF63fa`
 - Ropsten DAI: `0xc2118d4d90b274016cB7a54c03EF52E6c537D957`
 - Ropsten LINK:  `0x20fe562d797a42dcb3399062ae9546cd06f63280`
-- Ropsten oracle (node down):  `0xd3d4f566b8e0de2dcde877b1954c2d759cc395a6`
+- Ropsten oracle:  `0xd3d4f566b8e0de2dcde877b1954c2d759cc395a6`
 - Ropsten tickerJobIdString: `51df1946d454408b90f15530d35c134a`
 
 ### Launching Ropsten Truffle tests with Infura (E2E test)
