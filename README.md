@@ -1,4 +1,4 @@
-# Stocksd.app Solidity contracts monorepo
+# Stocksd.app Solidity contracts 
 ### built with Truffle, oz and Chainlink
 
 ## Contribution Guide (gitflow)
