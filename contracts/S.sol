@@ -5,22 +5,38 @@ pragma solidity 0.6.10;
 
 import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
 import "@chainlink/contracts/src/v0.6/vendor/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./DateTime.sol";
 
 
 // import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.6/ChainlinkClient.sol";
 // import "https://github.com/smartcontractkit/chainlink/evm-contracts/src/v0.6/vendor/SafeMath.sol";
+// import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/56de324afea13c4649b00ca8c3a3e3535d532bd4/contracts/token/ERC20/IERC20.sol";
 // import "https://github.com/bokkypoobah/BokkyPooBahsDateTimeLibrary/blob/master/contracts/BokkyPooBahsDateTimeLibrary.sol";
 
-abstract contract ERC20Token {
-    function transferFrom(address from, address to, uint value) public virtual;
-    function transfer(address recipient, uint256 amount) public virtual;
-    function balanceOf(address account) external view virtual returns (uint256);
-    function stakedOf(address _user) public view virtual returns (uint256);
-    function dividendsOf(address _user) public view virtual returns (uint256);
-    function totalStaked() public view virtual returns (uint256);
-    function totalUnlockedSupply() public view virtual returns (uint256);
-    function transferFromEx(address from, address to, uint value) public virtual;
+interface ISToken {
+
+  function totalSupply() external view returns (uint256);
+
+  function balanceOf(address account) external view returns (uint256);
+
+  function transfer(address recipient, uint256 amount) external returns (bool);
+
+  function allowance(address owner, address spender) external view returns (uint256);
+
+  function approve(address spender, uint256 amount) external returns (bool);
+
+  function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+
+  function stakedOf(address _user) view external returns (uint256);
+
+  function dividendsOf(address _user) view external returns (uint256);
+
+  function totalStaked() view external returns (uint256);
+
+  function totalUnlockedSupply() view external returns (uint256);
+
+  function transferFromEx(address from, address to, uint256 value) external returns (bool);
 }
 
 
@@ -91,31 +107,32 @@ using BokkyPooBahsDateTimeLibrary for uint;
     linkToS = 0;
   }
 
-  // functions (administration)
-  function setPayment(uint256 _linkAmount, uint256 _linkToS) public
-  {
+  modifier onlyOwner() {
     require(msg.sender == owner);
+    _;
+  }
+
+  // functions (administration)
+  function setPayment(uint256 _linkAmount, uint256 _linkToS) onlyOwner public
+  {
     oraclePaymentDefault = _linkAmount;
     linkToS = _linkToS;
   }
 
-  function setDAIToken(address _token) public
+  function setDAIToken(address _token) onlyOwner public
   {
     //0xc2118d4d90b274016cB7a54c03EF52E6c537D957 for testnet
-    require(msg.sender == owner);
     DAI_token = _token;
   }
 
- function setSToken(address _token) public
+ function setSToken(address _token) onlyOwner public
   {
-    require(msg.sender == owner);
     SToken = _token;
   }
 
-  function setOracle(address _oracle, bool _isCertified) public
+  function setOracle(address _oracle, bool _isCertified) onlyOwner public
   {
     //0xd3d4f566b8e0de2dcde877b1954c2d759cc395a6 for testnet
-    require(msg.sender == owner);
     oracles[_oracle] = _isCertified;
 
   }
@@ -140,7 +157,7 @@ using BokkyPooBahsDateTimeLibrary for uint;
     //
     addressTrades[msg.sender].push(trades.length-1);
     //excess should be withdrawable
-    ERC20Token DAI = ERC20Token(DAI_token);
+    IERC20 DAI = IERC20(DAI_token);
     DAI.transferFrom(msg.sender, address(this), _fundsSeller);
     trades_fundsSeller.push(_fundsSeller);
     emit OfferCreated(_ticker, _maxAmountStock, _minAmountStock, _dsellerPercentage, msg.sender);
@@ -154,13 +171,13 @@ using BokkyPooBahsDateTimeLibrary for uint;
     require(trades[_tradeID].seller == msg.sender);
     require(trades[_tradeID].priceCreationReqTimeout == 0 || trades[_tradeID].priceCreationReqTimeout < block.timestamp);
     trades_isCancelled[_tradeID] = true;
-    ERC20Token DAI = ERC20Token(DAI_token);
+    IERC20 DAI = IERC20(DAI_token);
     DAI.transfer( msg.sender, trades_fundsSeller[_tradeID]);
     trades_fundsSeller[_tradeID] = 0;
     emit OfferCancelled(_tradeID);
   }
 
-  function ceil(uint a, uint m) view private  returns (uint ) {
+  function ceil(uint a, uint m) pure private  returns (uint ) {
     return ((a + m - 1) / m) * m;
   }
 
@@ -224,7 +241,7 @@ function _acceptDsellerOffer(bytes32 _requestId, uint256 _price)
   //second div for fractional trading
   uint256 presentValueBuyer = trade.amountStock.mul(_price.mul(trades_dsellerPercentage[tradeID]).div(100).div(1000));
   trades[tradeID].fundsBuyer = presentValueBuyer;
-  ERC20Token DAI = ERC20Token(DAI_token);
+  IERC20 DAI = IERC20(DAI_token);
   DAI.transferFrom(trade.buyer, address(this), presentValueBuyer);
   trades_isActive[tradeID] = true;
   tradesMeta[tradeID].acceptedAt = block.timestamp;
@@ -234,7 +251,7 @@ function _acceptDsellerOffer(bytes32 _requestId, uint256 _price)
 }
 
 function fundWithLinkOrS(uint256 linkPayment) public {
-  ERC20Token ST = ERC20Token(SToken);
+  ISToken ST = ISToken(SToken);
   uint256 sBalance = ST.balanceOf(msg.sender);
   uint256 sPayment = linkPayment.mul(linkToS).div(100);
   if (sBalance >= sPayment) {
@@ -316,7 +333,7 @@ function _closeTrade(bytes32 _requestId, uint256 _price)
   }
   trades_fundsSeller[tradeID] = 0;
   trades[tradeID].fundsBuyer = 0;
-  ERC20Token DAI = ERC20Token(DAI_token);
+  IERC20 DAI = IERC20(DAI_token);
   if (sendToSeller > 0) {
          DAI.transfer(trade.seller, sendToSeller);
   }
@@ -333,7 +350,7 @@ function _closeTrade(bytes32 _requestId, uint256 _price)
   function daiDividends(address _forHolder) public view returns (uint256)
   {
       uint256 totalOpenPool = divPool;
-      ERC20Token ST = ERC20Token(SToken);
+      ISToken ST = ISToken(SToken);
       uint256 userSDividends = ST.dividendsOf(_forHolder);
       uint256 totalUnlocked = ST.totalUnlockedSupply();
       return totalOpenPool.mul(userSDividends).div(totalUnlocked);
@@ -342,8 +359,8 @@ function _closeTrade(bytes32 _requestId, uint256 _price)
   function claimDaiDividends(address _forHolder, uint256 _dividends) public
   {
     require(msg.sender == SToken);
-    ERC20Token DAI = ERC20Token(DAI_token);
-    ERC20Token ST = ERC20Token(SToken);
+    IERC20 DAI = IERC20(DAI_token);
+    ISToken ST = ISToken(SToken);
     uint256 totalOpenPool = divPool;
     uint256 totalUnlocked = ST.totalUnlockedSupply();
     uint256 divsDue = totalOpenPool.mul(_dividends).div(totalUnlocked);
