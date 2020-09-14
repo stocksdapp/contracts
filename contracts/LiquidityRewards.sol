@@ -11,6 +11,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IRewardDistributionRecipient.sol";
 
+interface STO {
+    function mint(address _to, uint256 _amount) external;
+}
 
 contract LPTokenWrapper {
     using SafeMath for uint256;
@@ -44,7 +47,8 @@ contract LPTokenWrapper {
 }
 
 contract STORewards is LPTokenWrapper, IRewardDistributionRecipient {
-    IERC20 public snx = IERC20(0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F);
+    // NOTE swap for actual STO token address
+    STO public sto = STO(0x0);
     uint256 public constant DURATION = 7 days;
 
     uint256 public periodFinish = 0;
@@ -117,7 +121,7 @@ contract STORewards is LPTokenWrapper, IRewardDistributionRecipient {
         uint256 reward = earned(msg.sender);
         if (reward > 0) {
             rewards[msg.sender] = 0;
-            snx.safeTransfer(msg.sender, reward);
+            sto.mint(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
         }
     }

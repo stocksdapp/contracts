@@ -5,13 +5,19 @@
 
 pragma solidity 0.6.10;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC777/ERC777.sol";
 
+contract STO is ERC777 {
 
-contract STO is ERC777, Ownable {
-    //onlyOwner is a contract governing issuance for liquidity incentives and devfund
-    function mint(address _to, uint256 _amount) public onlyOwner {
+    address public minter;
+
+    modifier onlyMinter() {
+        require(msg.sender == minter);
+        _;
+    }
+
+    // @notice minter is a contract governing issuance for liquidity incentives and devfund
+    function mint(address _to, uint256 _amount) onlyMinter external {
         _mint(_to, _amount, "", "");
         _moveDelegates(address(0), _delegates[_to], _amount);
     }
@@ -21,6 +27,12 @@ contract STO is ERC777, Ownable {
         ERC777("STO", "STO", defaultOperators)
     {
         _mint(msg.sender, initialSupply, "", "");
+    }
+
+    // @notice final minter contract should not be migratable
+    function migrateMinter(address _minter) onlyMinter public
+    {
+        minter = _minter;
     }
 
     /// @notice A record of each accounts delegate
