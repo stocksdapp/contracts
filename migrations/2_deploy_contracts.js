@@ -1,8 +1,9 @@
 const S = artifacts.require("S");
-const SToken = artifacts.require("SToken");
+const STO = artifacts.require("STO");
 
 module.exports = function(deployer) {
-  deployer.deploy(SToken, "100000000000000000000000000").then(function() {
+  //small initial supply of 1k
+  deployer.deploy(STO, "1000000000000000000000", []).then(function() {
     return deployer.deploy(S);
   });
 };
