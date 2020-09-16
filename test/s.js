@@ -9,6 +9,7 @@ let exchangeAddress;
 const oracleAddress = "0xd3d4f566b8e0de2dcde877b1954c2d759cc395a6";
 const tickerJobId = web3.utils.fromAscii("51df1946d454408b90f15530d35c134a");
 
+// NOTE E2E test is tied to Ropsten oracles
 contract('SToken', (accounts) => {
   it('Setup: set exchange in token, token in exchange, oracle', async () => {
     //boilerplate
