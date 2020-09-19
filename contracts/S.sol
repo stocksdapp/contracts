@@ -112,6 +112,23 @@ using BokkyPooBahsDateTimeLibrary for uint;
     _;
   }
 
+  //factory capabilities
+  function bakeStockTokens(uint256 _initialAmount, string _name, uint8 _decimals, string _symbol)
+        public
+    returns (address) {
+        ERC777 stockToken = (new ERC777(_initialAmount, _name, _decimals, _symbol));
+        stockToken.transfer(msg.sender, _initialAmount);
+        return address(stockToken);
+    }
+
+  function burnStockTokens(uint256 _initialAmount, string _name, uint8 _decimals, string _symbol)
+        public
+    returns (address) {
+        ERC777 stockToken = (new ERC777(_initialAmount, _name, _decimals, _symbol));
+        stockToken.transfer(msg.sender, _initialAmount);
+        return address(stockToken);
+    }
+
   // functions (administration)
   function setPayment(uint256 _linkAmount, uint256 _linkToS) onlyOwner public
   {
