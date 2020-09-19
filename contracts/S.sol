@@ -6,6 +6,7 @@ pragma solidity 0.6.10;
 import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
 import "@chainlink/contracts/src/v0.6/vendor/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC777/ERC777.sol";
 import "./DateTime.sol";
 
 
