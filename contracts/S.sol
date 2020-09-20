@@ -6,6 +6,7 @@ pragma solidity 0.6.10;
 import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
 import "@chainlink/contracts/src/v0.6/vendor/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC777/ERC777.sol";
 import "./DateTime.sol";
 
 
@@ -111,6 +112,23 @@ using BokkyPooBahsDateTimeLibrary for uint;
     require(msg.sender == owner);
     _;
   }
+
+  //factory capabilities
+  function bakeStockTokens(uint256 _initialAmount, string _name, uint8 _decimals, string _symbol)
+        public
+    returns (address) {
+        ERC777 stockToken = (new ERC777(_initialAmount, _name, _decimals, _symbol));
+        stockToken.transfer(msg.sender, _initialAmount);
+        return address(stockToken);
+    }
+
+  function burnStockTokens(uint256 _initialAmount, string _name, uint8 _decimals, string _symbol)
+        public
+    returns (address) {
+        ERC777 stockToken = (new ERC777(_initialAmount, _name, _decimals, _symbol));
+        stockToken.transfer(msg.sender, _initialAmount);
+        return address(stockToken);
+    }
 
   // functions (administration)
   function setPayment(uint256 _linkAmount, uint256 _linkToS) onlyOwner public
